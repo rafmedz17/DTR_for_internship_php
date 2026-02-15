@@ -80,21 +80,31 @@ $months = ['01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'M
                 <h1 class="text-2xl font-semibold">Time Records</h1>
                 <p class="text-navy-400 text-sm mt-1"><?= $months[$month] ?> <?= $year ?> &mdash; <?= $monthlySummary['days'] ?> days, <?= number_format($monthlySummary['total_hours'], 1) ?> hours</p>
             </div>
-            <form method="GET" class="flex items-center gap-2">
-                <select name="month" class="px-3 py-2 rounded-lg bg-navy-800 border border-navy-700/50 text-sm text-white focus:outline-none focus:border-gold-500/50 transition">
-                    <?php foreach ($months as $key => $name): ?>
-                        <option value="<?= $key ?>" <?= $key === $month ? 'selected' : '' ?>><?= $name ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <select name="year" class="px-3 py-2 rounded-lg bg-navy-800 border border-navy-700/50 text-sm text-white focus:outline-none focus:border-gold-500/50 transition">
-                    <?php for ($y = date('Y'); $y >= date('Y') - 2; $y--): ?>
-                        <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
-                    <?php endfor; ?>
-                </select>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-gold-500/10 border border-gold-500/20 text-gold-400 text-sm font-medium hover:bg-gold-500/20 transition">
-                    Filter
-                </button>
-            </form>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <form method="GET" class="flex items-center gap-2">
+                    <select name="month" class="px-3 py-2 rounded-lg bg-navy-800 border border-navy-700/50 text-sm text-white focus:outline-none focus:border-gold-500/50 transition">
+                        <?php foreach ($months as $key => $name): ?>
+                            <option value="<?= $key ?>" <?= $key === $month ? 'selected' : '' ?>><?= $name ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select name="year" class="px-3 py-2 rounded-lg bg-navy-800 border border-navy-700/50 text-sm text-white focus:outline-none focus:border-gold-500/50 transition">
+                        <?php for ($y = date('Y'); $y >= date('Y') - 2; $y--): ?>
+                            <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-gold-500/10 border border-gold-500/20 text-gold-400 text-sm font-medium hover:bg-gold-500/20 transition">
+                        Filter
+                    </button>
+                </form>
+                <a href="generate_pdf.php?month=<?= urlencode($month) ?>&year=<?= urlencode($year) ?>" target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-navy-700/50 border border-gold-500/30 text-gold-400 text-sm font-medium hover:bg-gold-500/10 hover:border-gold-500/60 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M14 3v4a1 1 0 001 1h4M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2zM12 11v6m-3-3h6"/>
+                    </svg>
+                    View PDF
+                </a>
+            </div>
         </div>
 
         <!-- Records Table -->
