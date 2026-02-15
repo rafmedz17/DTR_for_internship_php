@@ -10,6 +10,10 @@ $error = '';
 $success = '';
 $mode = $_GET['mode'] ?? 'login';
 
+if (($_GET['success'] ?? '') === 'password_reset') {
+    $success = 'Password changed successfully. You can now sign in.';
+}
+
 // Handle Login
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $email = trim($_POST['email']);
@@ -118,16 +122,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     </div>
                     <div>
                         <label class="block text-sm text-navy-300 mb-1.5">Password</label>
-                        <input type="password" name="password" required
-                            class="w-full px-4 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
-                            placeholder="Enter your password">
+                        <div class="relative">
+                            <input type="password" name="password" required id="loginPassword"
+                                class="w-full px-4 py-2.5 pr-10 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
+                                placeholder="Enter your password">
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-gold-400 transition select-none"
+                                onmousedown="showPass('loginPassword')" onmouseup="hidePass('loginPassword')" onmouseleave="hidePass('loginPassword')"
+                                ontouchstart="showPass('loginPassword')" ontouchend="hidePass('loginPassword')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="submit" name="login"
                     class="w-full mt-6 py-2.5 rounded-lg bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium text-sm transition-colors">
                     Sign In
                 </button>
-                <p class="text-center text-sm text-navy-400 mt-6">
+                <div class="text-right mt-2">
+                    <a href="forgot_password.php" class="text-xs text-navy-400 hover:text-gold-400 transition">Forgot password?</a>
+                </div>
+                <p class="text-center text-sm text-navy-400 mt-4">
                     Don't have an account?
                     <a href="#" onclick="toggleForm('register')" class="text-gold-400 hover:text-gold-300 transition">Create one</a>
                 </p>
@@ -157,15 +174,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     </div>
                     <div>
                         <label class="block text-sm text-navy-300 mb-1.5">Password</label>
-                        <input type="password" name="password" required minlength="6"
-                            class="w-full px-4 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
-                            placeholder="Min. 6 characters">
+                        <div class="relative">
+                            <input type="password" name="password" required minlength="6" id="regPassword"
+                                class="w-full px-4 py-2.5 pr-10 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
+                                placeholder="Min. 6 characters">
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-gold-400 transition select-none"
+                                onmousedown="showPass('regPassword')" onmouseup="hidePass('regPassword')" onmouseleave="hidePass('regPassword')"
+                                ontouchstart="showPass('regPassword')" ontouchend="hidePass('regPassword')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm text-navy-300 mb-1.5">Confirm Password</label>
-                        <input type="password" name="confirm_password" required
-                            class="w-full px-4 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
-                            placeholder="Re-enter your password">
+                        <div class="relative">
+                            <input type="password" name="confirm_password" required id="regConfirm"
+                                class="w-full px-4 py-2.5 pr-10 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
+                                placeholder="Re-enter your password">
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-gold-400 transition select-none"
+                                onmousedown="showPass('regConfirm')" onmouseup="hidePass('regConfirm')" onmouseleave="hidePass('regConfirm')"
+                                ontouchstart="showPass('regConfirm')" ontouchend="hidePass('regConfirm')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="submit" name="register"
@@ -187,6 +224,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             document.getElementById('loginForm').classList.toggle('hidden', mode !== 'login');
             document.getElementById('registerForm').classList.toggle('hidden', mode !== 'register');
         }
+        function showPass(id) { document.getElementById(id).type = 'text'; }
+        function hidePass(id) { document.getElementById(id).type = 'password'; }
     </script>
 </body>
 </html>
