@@ -57,21 +57,10 @@ if ($action === 'reset_time_in') {
     $stmt->execute([$userId, $today]);
 }
 
-if ($action === 'edit_record') {
-    $timeIn = $_POST['time_in'] ?? '';
-    $timeOut = $_POST['time_out'] ?? '';
+if ($action === 'save_journal') {
     $remarks = trim($_POST['remarks'] ?? '');
-
-    if ($timeIn && $timeOut && $timeOut > $timeIn) {
-        $dtIn = new DateTime($timeIn);
-        $dtOut = new DateTime($timeOut);
-        $diff = $dtIn->diff($dtOut);
-        $hoursWorked = $diff->h + ($diff->i / 60);
-        $status = $hoursWorked >= 6 ? 'present' : 'half-day';
-
-        $stmt = $pdo->prepare("UPDATE time_records SET time_in = ?, time_out = ?, hours_worked = ?, status = ?, remarks = ? WHERE user_id = ? AND date = ?");
-        $stmt->execute([$timeIn, $timeOut, round($hoursWorked, 2), $status, $remarks ?: null, $userId, $today]);
-    }
+    $stmt = $pdo->prepare("UPDATE time_records SET remarks = ? WHERE user_id = ? AND date = ?");
+    $stmt->execute([$remarks ?: null, $userId, $today]);
 }
 
 header('Location: dashboard.php');

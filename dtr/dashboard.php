@@ -147,14 +147,18 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
                         </form>
                     <?php elseif (!$hasTimedOut): ?>
                         <div class="flex flex-col sm:flex-row items-center gap-3">
-                            <form method="POST" action="process.php" id="timeOutForm" class="flex flex-col sm:flex-row items-center gap-3">
+                            <form method="POST" action="process.php" id="journalFormInProgress" class="hidden">
+                                <input type="hidden" name="action" value="save_journal">
+                                <input type="hidden" name="remarks" id="journalInProgress" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
+                            </form>
+                            <button type="button" onclick="openJournal('journalInProgress')"
+                                class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Daily Journal
+                            </button>
+                            <form method="POST" action="process.php">
                                 <input type="hidden" name="action" value="time_out">
-                                <input type="hidden" name="remarks" id="timeOutJournal" value="">
-                                <button type="button" onclick="openJournal('timeOutJournal')"
-                                    class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    Daily Journal
-                                </button>
+                                <input type="hidden" name="remarks" id="timeOutJournal" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
                                 <button type="submit" class="px-8 py-3 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-semibold text-sm transition-colors w-full sm:w-auto">
                                     Time Out
                                 </button>
@@ -167,8 +171,7 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
                             </form>
                         </div>
                     <?php else: ?>
-                        <!-- Completed view + Edit toggle -->
-                        <div id="completedView" class="flex items-center gap-3">
+                        <div class="flex items-center gap-3">
                             <div class="px-6 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-medium">
                                 Completed for today
                             </div>
@@ -178,45 +181,16 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
                                     Resume
                                 </button>
                             </form>
-                            <button onclick="document.getElementById('completedView').classList.add('hidden'); document.getElementById('editForm').classList.remove('hidden');"
-                                class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors">
-                                Edit
+                            <form method="POST" action="process.php" id="journalFormCompleted" class="hidden">
+                                <input type="hidden" name="action" value="save_journal">
+                                <input type="hidden" name="remarks" id="journalCompleted" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
+                            </form>
+                            <button type="button" onclick="openJournal('journalCompleted')"
+                                class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Daily Journal
                             </button>
                         </div>
-                        <!-- Edit form (hidden by default) -->
-                        <form method="POST" action="process.php" id="editForm" class="hidden w-full">
-                            <input type="hidden" name="action" value="edit_record">
-                            <div class="flex flex-col gap-3 w-full">
-                                <div class="flex flex-col sm:flex-row items-center gap-3">
-                                    <div class="flex items-center gap-2">
-                                        <label class="text-xs text-navy-400">In:</label>
-                                        <input type="time" name="time_in" value="<?= $todayRecord['time_in'] ?>"
-                                            class="px-3 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white text-sm focus:outline-none focus:border-gold-500/50 transition">
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <label class="text-xs text-navy-400">Out:</label>
-                                        <input type="time" name="time_out" value="<?= $todayRecord['time_out'] ?>"
-                                            class="px-3 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white text-sm focus:outline-none focus:border-gold-500/50 transition">
-                                    </div>
-                                    <input type="hidden" name="remarks" id="editJournal" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
-                                    <button type="button" onclick="openJournal('editJournal')"
-                                        class="px-3 py-2.5 rounded-lg bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        Daily Journal
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-2 justify-end">
-                                    <button type="button" onclick="document.getElementById('editForm').classList.add('hidden'); document.getElementById('completedView').classList.remove('hidden');"
-                                        class="px-4 py-2 rounded-lg bg-navy-700/50 hover:bg-navy-700 text-navy-300 text-sm transition-colors">
-                                        Cancel
-                                    </button>
-                                    <button type="submit"
-                                        class="px-6 py-2 rounded-lg bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium text-sm transition-colors">
-                                        Save
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
                     <?php endif; ?>
                 </div>
             </div>
@@ -310,7 +284,15 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
 
         function saveJournal() {
             if (activeJournalInputId) {
-                document.getElementById(activeJournalInputId).value = document.getElementById('journalTextarea').value;
+                const value = document.getElementById('journalTextarea').value;
+                document.getElementById(activeJournalInputId).value = value;
+                // Also update timeOutJournal if it exists (so Time Out carries the latest remarks)
+                const timeOutInput = document.getElementById('timeOutJournal');
+                if (timeOutInput) timeOutInput.value = value;
+                // Submit the journal form to save to DB immediately
+                const form = document.getElementById(activeJournalInputId).closest('form');
+                if (form) form.submit();
+                return;
             }
             closeJournal();
         }
