@@ -6,7 +6,6 @@ require_once 'phpmailer/PHPMailer.php';
 require_once 'phpmailer/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 if (isLoggedIn()) {
@@ -46,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->SMTPAuth   = true;
                 $mail->Username   = MAIL_USERNAME;
                 $mail->Password   = MAIL_PASSWORD;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = MAIL_PORT;
 
                 $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
