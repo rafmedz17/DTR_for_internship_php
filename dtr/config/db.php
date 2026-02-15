@@ -1,10 +1,10 @@
 <?php
 date_default_timezone_set('Asia/Manila');
 
-$host = 'localhost';
-$dbname = 'dtr_system';
-$username = 'root';
-$password = '';
+$host = 'sql205.infinityfree.com';
+$dbname = 'if0_41159395_dtr';
+$username = 'if0_41159395';
+$password = 'aLQbYEEx6BcZsS3';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
