@@ -28,8 +28,11 @@ $stmt = $pdo->prepare("SELECT * FROM time_records WHERE user_id = ? ORDER BY dat
 $stmt->execute([$_SESSION['user_id']]);
 $recentRecords = $stmt->fetchAll();
 
-$hasTimedIn = $todayRecord && $todayRecord['time_in'];
-$hasTimedOut = $todayRecord && $todayRecord['time_out'];
+$hasTimedIn   = $todayRecord && $todayRecord['time_in'];
+$onLunch      = $hasTimedIn && !empty($todayRecord['am_time_out']) && empty($todayRecord['pm_time_in']);
+$pmInProgress = $hasTimedIn && !empty($todayRecord['pm_time_in']) && empty($todayRecord['time_out']);
+$hasTimedOut  = $todayRecord && $todayRecord['time_out'];
+$amInProgress = $hasTimedIn && !$onLunch && !$pmInProgress && !$hasTimedOut;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -97,7 +100,7 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
             <div class="bg-navy-800/50 border border-navy-700/50 rounded-xl p-5">
                 <p class="text-xs text-navy-400 uppercase tracking-wider mb-1">Today</p>
                 <p class="text-2xl font-semibold">
-                    <?php if ($hasTimedIn && $hasTimedOut): ?>
+                    <?php if ($hasTimedOut): ?>
                         <?= number_format($todayRecord['hours_worked'], 1) ?><span class="text-sm text-navy-400 ml-1">hrs</span>
                     <?php elseif ($hasTimedIn): ?>
                         <span class="text-gold-400">In Progress</span>
@@ -105,6 +108,9 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
                         <span class="text-navy-500">—</span>
                     <?php endif; ?>
                 </p>
+                <?php if ($hasTimedOut && $todayRecord['under_time'] > 0): ?>
+                    <p class="text-xs text-gold-400 mt-1">Under time: <?= number_format($todayRecord['under_time'], 1) ?> hrs</p>
+                <?php endif; ?>
             </div>
             <div class="bg-navy-800/50 border border-navy-700/50 rounded-xl p-5">
                 <p class="text-xs text-navy-400 uppercase tracking-wider mb-1">This Week</p>
@@ -122,63 +128,140 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
             <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div class="text-center sm:text-left">
                     <p class="text-5xl font-light tracking-tight" id="liveClock"><?= date('h:i:s A') ?></p>
-                    <div class="flex items-center gap-4 mt-3 text-sm text-navy-400">
+                    <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-navy-400">
                         <?php if ($hasTimedIn): ?>
                             <span class="flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                In: <?= date('h:i A', strtotime($todayRecord['time_in'])) ?>
+                                AM In: <?= date('h:i A', strtotime($todayRecord['time_in'])) ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($todayRecord['am_time_out'])): ?>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
+                                AM Out: <?= date('h:i A', strtotime($todayRecord['am_time_out'])) ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($todayRecord['pm_time_in'])): ?>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                PM In: <?= date('h:i A', strtotime($todayRecord['pm_time_in'])) ?>
                             </span>
                         <?php endif; ?>
                         <?php if ($hasTimedOut): ?>
                             <span class="flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                                Out: <?= date('h:i A', strtotime($todayRecord['time_out'])) ?>
+                                PM Out: <?= date('h:i A', strtotime($todayRecord['time_out'])) ?>
                             </span>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div class="flex gap-3">
+
                     <?php if (!$hasTimedIn): ?>
+                        <!-- State 1: Not timed in -->
                         <form method="POST" action="process.php">
                             <input type="hidden" name="action" value="time_in">
                             <button type="submit" class="px-8 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold text-sm transition-colors">
-                                Time In
+                                AM Time In
                             </button>
                         </form>
-                    <?php elseif (!$hasTimedOut): ?>
+
+                    <?php elseif ($amInProgress): ?>
+                        <!-- State 2: AM In Progress -->
                         <div class="flex flex-col sm:flex-row items-center gap-3">
-                            <form method="POST" action="process.php" id="journalFormInProgress" class="hidden">
+                            <form method="POST" action="process.php" id="journalFormAM" class="hidden">
                                 <input type="hidden" name="action" value="save_journal">
-                                <input type="hidden" name="remarks" id="journalInProgress" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
+                                <input type="hidden" name="remarks" id="journalAM" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
                             </form>
-                            <button type="button" onclick="openJournal('journalInProgress')"
+                            <button type="button" onclick="openJournal('journalAM')"
                                 class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 Daily Journal
                             </button>
                             <form method="POST" action="process.php">
-                                <input type="hidden" name="action" value="time_out">
-                                <input type="hidden" name="remarks" id="timeOutJournal" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
-                                <button type="submit" class="px-8 py-3 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-semibold text-sm transition-colors w-full sm:w-auto">
-                                    Time Out
+                                <input type="hidden" name="action" value="lunch_break">
+                                <button type="submit" class="px-8 py-3 rounded-xl bg-gold-500/80 hover:bg-gold-500 text-navy-900 font-semibold text-sm transition-colors">
+                                    AM Time Out
                                 </button>
                             </form>
-                            <form method="POST" action="process.php" onsubmit="return confirm('Undo your Time In for today?')">
+                            <form method="POST" action="process.php" onsubmit="return confirm('Undo your AM Time In for today?')">
                                 <input type="hidden" name="action" value="reset_time_in">
                                 <button type="submit" class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors">
                                     Undo
                                 </button>
                             </form>
                         </div>
+
+                    <?php elseif ($onLunch): ?>
+                        <!-- State 3: AM Time Out / On Lunch Break -->
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                            <form method="POST" action="process.php" id="journalFormLunch" class="hidden">
+                                <input type="hidden" name="action" value="save_journal">
+                                <input type="hidden" name="remarks" id="journalLunch" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
+                            </form>
+                            <button type="button" onclick="openJournal('journalLunch')"
+                                class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Daily Journal
+                            </button>
+                            <div class="px-5 py-3 rounded-xl bg-gold-500/10 border border-gold-500/20 text-gold-400 text-sm font-medium">
+                                On Lunch Break
+                            </div>
+                            <form method="POST" action="process.php">
+                                <input type="hidden" name="action" value="pm_time_in">
+                                <button type="submit" class="px-8 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold text-sm transition-colors">
+                                    PM Time In
+                                </button>
+                            </form>
+                            <form method="POST" action="process.php" onsubmit="return confirm('Undo Lunch Break? You\'ll return to AM In Progress.')">
+                                <input type="hidden" name="action" value="undo_am_timeout">
+                                <button type="submit" class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors">
+                                    Undo
+                                </button>
+                            </form>
+                        </div>
+
+                    <?php elseif ($pmInProgress): ?>
+                        <!-- State 4: PM In Progress -->
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                            <form method="POST" action="process.php" id="journalFormPM" class="hidden">
+                                <input type="hidden" name="action" value="save_journal">
+                                <input type="hidden" name="remarks" id="journalPM" value="<?= htmlspecialchars($todayRecord['remarks'] ?? '') ?>">
+                            </form>
+                            <button type="button" onclick="openJournal('journalPM')"
+                                class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Daily Journal
+                            </button>
+                            <form method="POST" action="process.php">
+                                <input type="hidden" name="action" value="time_out">
+                                <button type="submit" class="px-8 py-3 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-semibold text-sm transition-colors">
+                                    Time Out
+                                </button>
+                            </form>
+                            <form method="POST" action="process.php" onsubmit="return confirm('Undo PM Time In? You\'ll return to Lunch Break.')">
+                                <input type="hidden" name="action" value="undo_pm_timein">
+                                <button type="submit" class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors">
+                                    Undo
+                                </button>
+                            </form>
+                        </div>
+
                     <?php else: ?>
-                        <div class="flex items-center gap-3">
+                        <!-- State 5: Completed -->
+                        <div class="flex flex-wrap items-center gap-3">
                             <div class="px-6 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-medium">
                                 Completed for today
                             </div>
-                            <form method="POST" action="process.php" onsubmit="return confirm('Resume your timer? Your current time out will be cleared.')">
+                            <?php if ($todayRecord['under_time'] > 0): ?>
+                                <div class="px-4 py-3 rounded-xl bg-gold-500/10 border border-gold-500/20 text-gold-400 text-sm">
+                                    Under time: <?= number_format($todayRecord['under_time'], 1) ?> hrs
+                                </div>
+                            <?php endif; ?>
+                            <form method="POST" action="process.php" onsubmit="return confirm('Undo Time Out? Your Time Out will be cleared.')">
                                 <input type="hidden" name="action" value="resume">
                                 <button type="submit" class="px-4 py-3 rounded-xl bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/30 text-gold-400 hover:text-gold-300 text-sm font-medium transition-colors">
-                                    Resume
+                                    Undo
                                 </button>
                             </form>
                             <form method="POST" action="process.php" id="journalFormCompleted" class="hidden">
@@ -190,8 +273,15 @@ $hasTimedOut = $todayRecord && $todayRecord['time_out'];
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 Daily Journal
                             </button>
+                            <form method="POST" action="process.php" onsubmit="return confirm('Reset your entire time record for today? This cannot be undone.')">
+                                <input type="hidden" name="action" value="reset_time_in">
+                                <button type="submit" class="px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 text-sm transition-colors">
+                                    Reset
+                                </button>
+                            </form>
                         </div>
                     <?php endif; ?>
+
                 </div>
             </div>
         </div>

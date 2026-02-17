@@ -13,7 +13,7 @@ $stmt->execute([$_SESSION['user_id'], $month, $year]);
 $records = $stmt->fetchAll();
 
 // Monthly summary
-$stmt = $pdo->prepare("SELECT COUNT(*) as days, COALESCE(SUM(hours_worked), 0) as total_hours FROM time_records WHERE user_id = ? AND MONTH(date) = ? AND YEAR(date) = ?");
+$stmt = $pdo->prepare("SELECT COUNT(*) as days, COALESCE(SUM(hours_worked), 0) as total_hours, COALESCE(SUM(under_time), 0) as total_under FROM time_records WHERE user_id = ? AND MONTH(date) = ? AND YEAR(date) = ?");
 $stmt->execute([$_SESSION['user_id'], $month, $year]);
 $monthlySummary = $stmt->fetch();
 
@@ -116,34 +116,47 @@ $months = ['01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'M
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-navy-700/50 text-xs text-navy-400 uppercase tracking-wider">
-                                <th class="px-6 py-3 text-left">Date</th>
-                                <th class="px-6 py-3 text-left">Day</th>
-                                <th class="px-6 py-3 text-left">Time In</th>
-                                <th class="px-6 py-3 text-left">Time Out</th>
-                                <th class="px-6 py-3 text-left">Hours</th>
-                                <th class="px-6 py-3 text-left">Status</th>
-                                <th class="px-6 py-3 text-left">Journal</th>
+                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Day</th>
+                                <th class="px-4 py-3 text-left">AM In</th>
+                                <th class="px-4 py-3 text-left">AM Out</th>
+                                <th class="px-4 py-3 text-left">PM In</th>
+                                <th class="px-4 py-3 text-left">PM Out</th>
+                                <th class="px-4 py-3 text-left">Hours</th>
+                                <th class="px-4 py-3 text-left">Under Time</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Journal</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-navy-700/30">
                             <?php foreach ($records as $record): ?>
                                 <tr class="hover:bg-navy-700/20 transition-colors">
-                                    <td class="px-6 py-4 font-medium"><?= date('M d, Y', strtotime($record['date'])) ?></td>
-                                    <td class="px-6 py-4 text-navy-300"><?= date('l', strtotime($record['date'])) ?></td>
-                                    <td class="px-6 py-4"><?= $record['time_in'] ? date('h:i A', strtotime($record['time_in'])) : '—' ?></td>
-                                    <td class="px-6 py-4"><?= $record['time_out'] ? date('h:i A', strtotime($record['time_out'])) : '—' ?></td>
-                                    <td class="px-6 py-4 font-medium"><?= $record['hours_worked'] ? number_format($record['hours_worked'], 1) : '—' ?></td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-4 py-4 font-medium whitespace-nowrap"><?= date('M d, Y', strtotime($record['date'])) ?></td>
+                                    <td class="px-4 py-4 text-navy-300 whitespace-nowrap"><?= date('D', strtotime($record['date'])) ?></td>
+                                    <td class="px-4 py-4 whitespace-nowrap"><?= !empty($record['time_in'])     ? date('h:i A', strtotime($record['time_in']))     : '—' ?></td>
+                                    <td class="px-4 py-4 whitespace-nowrap"><?= !empty($record['am_time_out']) ? date('h:i A', strtotime($record['am_time_out'])) : '—' ?></td>
+                                    <td class="px-4 py-4 whitespace-nowrap"><?= !empty($record['pm_time_in'])  ? date('h:i A', strtotime($record['pm_time_in']))  : '—' ?></td>
+                                    <td class="px-4 py-4 whitespace-nowrap"><?= !empty($record['time_out'])    ? date('h:i A', strtotime($record['time_out']))    : '—' ?></td>
+                                    <td class="px-4 py-4 font-medium whitespace-nowrap"><?= $record['hours_worked'] !== null ? number_format($record['hours_worked'], 1) . ' hrs' : '—' ?></td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <?php if ($record['under_time'] > 0): ?>
+                                            <span class="text-gold-400 font-medium"><?= number_format($record['under_time'], 1) ?> hrs</span>
+                                        <?php else: ?>
+                                            <span class="text-navy-500">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-4">
                                         <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium
                                             <?= $record['status'] === 'present' ? 'bg-emerald-500/10 text-emerald-400' : ($record['status'] === 'half-day' ? 'bg-gold-500/10 text-gold-400' : 'bg-red-500/10 text-red-400') ?>">
                                             <?= ucfirst($record['status']) ?>
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-4 py-4">
                                         <?php if (!empty($record['remarks'])): ?>
-                                            <button onclick="openJournalView(<?= htmlspecialchars(json_encode($record['remarks']), ENT_QUOTES) ?>, '<?= date('M d, Y', strtotime($record['date'])) ?>')"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gold-500/10 border border-gold-500/20 text-gold-400 hover:bg-gold-500/20 text-xs font-medium transition-colors">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <button type="button"
+                                                onclick="openJournalView(<?= htmlspecialchars(json_encode($record['remarks'])) ?>, <?= htmlspecialchars(json_encode(date('M d, Y', strtotime($record['date'])))) ?>)"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-xs transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                 View
                                             </button>
                                         <?php else: ?>
@@ -157,9 +170,14 @@ $months = ['01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'M
                 </div>
 
                 <!-- Monthly Total -->
-                <div class="px-6 py-4 border-t border-navy-700/50 flex items-center justify-between bg-navy-800/30">
+                <div class="px-6 py-4 border-t border-navy-700/50 flex flex-wrap items-center justify-between gap-2 bg-navy-800/30">
                     <span class="text-sm text-navy-400">Monthly Total</span>
-                    <span class="text-sm font-semibold"><?= number_format($monthlySummary['total_hours'], 1) ?> hours &mdash; <?= $monthlySummary['days'] ?> day(s)</span>
+                    <div class="flex items-center gap-4 text-sm font-semibold">
+                        <span><?= number_format($monthlySummary['total_hours'], 1) ?> hrs &mdash; <?= $monthlySummary['days'] ?> day(s)</span>
+                        <?php if ($monthlySummary['total_under'] > 0): ?>
+                            <span class="text-gold-400">Under time: <?= number_format($monthlySummary['total_under'], 1) ?> hrs</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>

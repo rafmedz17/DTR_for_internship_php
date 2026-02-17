@@ -16,11 +16,20 @@ CREATE TABLE `time_records` (
     `user_id` INT NOT NULL,
     `date` DATE NOT NULL,
     `time_in` TIME DEFAULT NULL,
+    `am_time_out` TIME DEFAULT NULL,
+    `pm_time_in` TIME DEFAULT NULL,
     `time_out` TIME DEFAULT NULL,
     `hours_worked` DECIMAL(5,2) DEFAULT NULL,
+    `under_time` DECIMAL(5,2) DEFAULT NULL,
     `status` ENUM('present', 'half-day', 'absent') DEFAULT 'present',
     `remarks` TEXT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     UNIQUE KEY `unique_user_date` (`user_id`, `date`)
 ) ENGINE=InnoDB;
+
+-- Migration for existing installations:
+-- ALTER TABLE time_records
+--   ADD COLUMN am_time_out TIME DEFAULT NULL AFTER time_in,
+--   ADD COLUMN pm_time_in  TIME DEFAULT NULL AFTER am_time_out,
+--   ADD COLUMN under_time  DECIMAL(5,2) DEFAULT NULL AFTER hours_worked;
