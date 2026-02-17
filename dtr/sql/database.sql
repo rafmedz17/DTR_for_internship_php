@@ -7,6 +7,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(100) NOT NULL UNIQUE,
     `password` VARCHAR(255) NOT NULL,
     `department` VARCHAR(100) DEFAULT NULL,
+    `company_name` VARCHAR(100) DEFAULT NULL,
     `position` VARCHAR(100) DEFAULT 'Intern',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -33,3 +34,5 @@ CREATE TABLE `time_records` (
 --   ADD COLUMN am_time_out TIME DEFAULT NULL AFTER time_in,
 --   ADD COLUMN pm_time_in  TIME DEFAULT NULL AFTER am_time_out,
 --   ADD COLUMN under_time  DECIMAL(5,2) DEFAULT NULL AFTER hours_worked;
+-- ALTER TABLE users
+--   ADD COLUMN company_name VARCHAR(100) DEFAULT NULL AFTER department;

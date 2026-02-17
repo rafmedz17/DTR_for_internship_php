@@ -36,6 +36,7 @@ class DTRpdf extends FPDF
     public string $employeeName = '';
     public string $department   = '';
     public string $position     = '';
+    public string $companyName  = '';
     public string $periodLabel  = '';
 
     function Header()
@@ -74,7 +75,11 @@ class DTRpdf extends FPDF
         $this->SetFont('Arial', '', 8);
         $this->Cell(25, 5, 'Department:', 0, 0);
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(0, 5, $this->department, 0, 1);
+        $this->Cell(75, 5, $this->department, 0, 0);
+        $this->SetFont('Arial', '', 8);
+        $this->Cell(20, 5, 'Company:', 0, 0);
+        $this->SetFont('Arial', 'B', 8);
+        $this->Cell(0, 5, $this->companyName, 0, 1);
 
         // Gold divider
         $this->SetDrawColor(201, 162, 39);
@@ -98,7 +103,8 @@ class DTRpdf extends FPDF
 $pdf = new DTRpdf('P', 'mm', 'A4');
 $pdf->employeeName = pdfStr($user['full_name']);
 $pdf->department   = pdfStr($user['department'] ?? '');
-$pdf->position     = pdfStr($user['position']   ?? '');
+$pdf->position     = pdfStr($user['position']    ?? '');
+$pdf->companyName  = pdfStr($user['company_name'] ?? '');
 $pdf->periodLabel  = $months[$month] . ' ' . $year;
 $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 18);

@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm = $_POST['confirm_password'];
-    $department = trim($_POST['department']);
+    $department   = trim($_POST['department']);
+    $company_name = trim($_POST['company_name'] ?? '');
 
     if ($password !== $confirm) {
         $error = 'Passwords do not match.';
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             $mode = 'register';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, department) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$full_name, $email, $hash, $department]);
+            $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, department, company_name) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$full_name, $email, $hash, $department, $company_name ?: null]);
             $success = 'Account created successfully. Please log in.';
             $mode = 'login';
         }
@@ -171,6 +172,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         <input type="text" name="department"
                             class="w-full px-4 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
                             placeholder="e.g. IT Department">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-navy-300 mb-1.5">Company Name</label>
+                        <input type="text" name="company_name"
+                            class="w-full px-4 py-2.5 rounded-lg bg-navy-900/50 border border-navy-600/50 text-white placeholder-navy-400 text-sm focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/25 transition"
+                            placeholder="e.g. ABC Corporation">
                     </div>
                     <div>
                         <label class="block text-sm text-navy-300 mb-1.5">Password</label>
