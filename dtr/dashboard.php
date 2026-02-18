@@ -213,6 +213,12 @@ $amInProgress = $hasTimedIn && !$onLunch && !$pmInProgress && !$hasTimedOut;
                                     PM Time In
                                 </button>
                             </form>
+                            <form method="POST" action="process.php" onsubmit="return confirm('End your day now? Only AM hours will be counted.')">
+                                <input type="hidden" name="action" value="time_out_halfday">
+                                <button type="submit" class="px-8 py-3 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-semibold text-sm transition-colors">
+                                    Time Out
+                                </button>
+                            </form>
                             <form method="POST" action="process.php" onsubmit="return confirm('Undo Lunch Break? You\'ll return to AM In Progress.')">
                                 <input type="hidden" name="action" value="undo_am_timeout">
                                 <button type="submit" class="px-4 py-3 rounded-xl bg-navy-700/50 hover:bg-navy-700 border border-navy-600/50 text-navy-300 hover:text-white text-sm transition-colors">

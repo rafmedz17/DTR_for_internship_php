@@ -43,6 +43,26 @@ if ($action === 'pm_time_in') {
     }
 }
 
+// AM-Only Time Out (half day from State 3 — no PM session)
+if ($action === 'time_out_halfday') {
+    $stmt = $pdo->prepare("SELECT * FROM time_records WHERE user_id = ? AND date = ? AND am_time_out IS NOT NULL AND pm_time_in IS NULL AND time_out IS NULL");
+    $stmt->execute([$userId, $today]);
+    $record = $stmt->fetch();
+
+    if ($record) {
+        $amIn    = new DateTime($record['time_in']);
+        $amOut   = new DateTime($record['am_time_out']);
+        $amHours = $amIn->diff($amOut)->h + ($amIn->diff($amOut)->i / 60);
+
+        $total     = min(8.00, round($amHours, 2));
+        $underTime = round(max(0, 8.00 - $total), 2);
+        $status    = $total >= 6 ? 'present' : 'half-day';
+
+        $stmt = $pdo->prepare("UPDATE time_records SET time_out = am_time_out, hours_worked = ?, under_time = ?, status = ? WHERE id = ?");
+        $stmt->execute([$total, $underTime, $status, $record['id']]);
+    }
+}
+
 // PM Time Out (End of Day)
 if ($action === 'time_out') {
     $stmt = $pdo->prepare("SELECT * FROM time_records WHERE user_id = ? AND date = ? AND pm_time_in IS NOT NULL AND time_out IS NULL");
