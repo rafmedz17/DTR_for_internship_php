@@ -29,7 +29,7 @@ $stmt->execute([$_SESSION['user_id']]);
 $recentRecords = $stmt->fetchAll();
 
 $hasTimedIn   = $todayRecord && $todayRecord['time_in'];
-$onLunch      = $hasTimedIn && !empty($todayRecord['am_time_out']) && empty($todayRecord['pm_time_in']);
+$onLunch      = $hasTimedIn && !empty($todayRecord['am_time_out']) && empty($todayRecord['pm_time_in']) && empty($todayRecord['time_out']);
 $pmInProgress = $hasTimedIn && !empty($todayRecord['pm_time_in']) && empty($todayRecord['time_out']);
 $hasTimedOut  = $todayRecord && $todayRecord['time_out'];
 $amInProgress = $hasTimedIn && !$onLunch && !$pmInProgress && !$hasTimedOut;
