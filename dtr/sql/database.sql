@@ -1,5 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `dtr_system`;
-USE `dtr_system`;
+-- Select (or create) your database in phpMyAdmin first, then import this file.
+-- Local XAMPP only: you may uncomment the next two lines instead.
+-- CREATE DATABASE IF NOT EXISTS `dtr_system`;
+-- USE `dtr_system`;
 
 CREATE TABLE `users` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,6 +29,15 @@ CREATE TABLE `time_records` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     UNIQUE KEY `unique_user_date` (`user_id`, `date`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `password_resets` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `email` VARCHAR(100) NOT NULL,
+    `token` VARCHAR(64) NOT NULL UNIQUE,
+    `used` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (`email`)
 ) ENGINE=InnoDB;
 
 -- Migration for existing installations:

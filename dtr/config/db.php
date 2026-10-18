@@ -1,10 +1,13 @@
 <?php
 date_default_timezone_set('Asia/Manila');
 
-$host = 'sql205.infinityfree.com';
-$dbname = 'if0_41159395_dtr';
-$username = 'if0_41159395';
-$password = 'aLQbYEEx6BcZsS3';
+// Credentials live in secrets.php (gitignored). See secrets.example.php.
+$secrets = require __DIR__ . '/secrets.php';
+
+$host = $secrets['db_host'];
+$dbname = $secrets['db_name'];
+$username = $secrets['db_user'];
+$password = $secrets['db_pass'];
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);

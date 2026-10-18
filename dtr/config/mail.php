@@ -1,16 +1,11 @@
 <?php
-// Gmail SMTP Configuration
-// Fill in your Gmail address and App Password below.
-// To generate an App Password:
-//   1. Go to myaccount.google.com > Security
-//   2. Enable 2-Step Verification (if not already on)
-//   3. Search "App passwords", create one for "Mail"
-//   4. Paste the 16-character password below (no spaces)
+// Brevo SMTP configuration. Credentials live in secrets.php (gitignored).
+$secrets = require __DIR__ . '/secrets.php';
 
 define('MAIL_HOST',      'smtp-relay.brevo.com');
 define('MAIL_PORT',      587);
-define('MAIL_USERNAME',  'a26c4a001@smtp-brevo.com');
-define('MAIL_PASSWORD',  'xsmtpsib-d37126ab7472abd0f8c5b0d0b0ca1584d2efd04ae7259585c85e0759f471e43c-o36H1t1YFgtJBZy8');
-define('MAIL_FROM',      'rafmedz17@gmail.com');
+define('MAIL_USERNAME',  $secrets['mail_username']);
+define('MAIL_PASSWORD',  $secrets['mail_password']);
+define('MAIL_FROM',      $secrets['mail_from']);
 define('MAIL_FROM_NAME', 'DTR System');
-define('APP_URL',        'https://dtrforintern.rf.gd');
+define('APP_URL',        $secrets['app_url']);
